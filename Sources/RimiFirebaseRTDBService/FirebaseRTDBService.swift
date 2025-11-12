@@ -166,7 +166,19 @@ public final class FirebaseRTDBService<T: Codable & Identifiable>: ObservableObj
         let ref = try databaseReference("\(id)")
         let data = try encoder.encode(item)
         let json = try JSONSerialization.jsonObject(with: data)
-        try await ref.updateChildValues(json as! [AnyHashable: Any])
+        
+        guard let dict = json as? [AnyHashable: Any] else {
+            throw RemoteServiceError.decodingError
+        }
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            ref.updateChildValues(dict) { error, _ in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
         try await readItems()
     }
 

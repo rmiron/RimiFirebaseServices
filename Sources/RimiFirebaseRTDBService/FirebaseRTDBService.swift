@@ -133,6 +133,49 @@ public final class FirebaseRTDBService<T: Codable & Identifiable>: ObservableObj
             }
         }
     }
+    
+    // MARK: - READ ALL (PAGINATION)
+    public func readItems(startingAfter lastKey: String? = nil, limit: UInt = 50) async throws {
+        let ref = try databaseReference()
+        var query: DatabaseQuery = ref.queryOrderedByKey().queryLimited(toFirst: limit)
+
+        if let lastKey = lastKey {
+            query = query.queryStarting(atValue: lastKey)
+        }
+
+        self.isLoading = true
+        defer { self.isLoading = false }
+
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            query.getData { error, snapshot in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+
+                var fetchedItems: [T] = []
+
+                if let snapshot = snapshot,
+                   let dict = snapshot.value as? [String: Any] {
+                    for (_, value) in dict {
+                        do {
+                            guard let itemDict = value as? [String: Any] else { continue }
+                            let data = try JSONSerialization.data(withJSONObject: itemDict)
+                            let item = try self.decoder.decode(T.self, from: data)
+                            fetchedItems.append(item)
+                        } catch {
+                            continuation.resume(throwing: RemoteServiceError.decodingError)
+                            return
+                        }
+                    }
+                }
+
+                self.items = fetchedItems
+                continuation.resume(returning: ())
+            }
+        }
+    }
+
 
     // MARK: - READ SINGLE ITEM
     public func readItem(by id: T.ID) async throws -> T? {
@@ -213,5 +256,18 @@ public final class FirebaseRTDBService<T: Codable & Identifiable>: ObservableObj
         }
         
         items.removeAll()
+    }
+    
+    /// Refresh items from the backend only if needed
+    /// - Parameter force: If true, always fetch from the backend
+    // MARK: - REFRESH ONLY IF NEEDED
+    public func refreshItemsIfNeeded(force: Bool = false) async throws {
+        // If we already have items and force is false, do nothing
+        if !items.isEmpty && !force {
+            return
+        }
+        
+        // Otherwise, fetch from backend
+        try await readItems()
     }
 }

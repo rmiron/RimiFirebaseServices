@@ -79,7 +79,17 @@ public final class FirebaseRTDBService<T: Codable & Identifiable>: ObservableObj
         let ref = try databaseReference()
         let data = try encoder.encode(item)
         let json = try JSONSerialization.jsonObject(with: data)
-        try await ref.childByAutoId().setValue(json)
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            let childRef = ref.childByAutoId()
+            childRef.setValue(json) { error, _ in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
+        
         try await readItems()
     }
 

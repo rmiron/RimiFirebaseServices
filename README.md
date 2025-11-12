@@ -1,8 +1,7 @@
+
 # RimiFirebaseServices
 
-# FirebaseRepository
-
-**FirebaseRepository** is a Swift Package that provides a clean and modular abstraction layer for interacting with Firebase.  
+**RimiFirebaseServices** is a Swift Package that provides a clean and modular abstraction layer for interacting with Firebase.  
 It defines a common set of protocols for performing CRUD operations on remote data, allowing any model type to seamlessly integrate with Firebase without exposing Firebase-specific logic to higher layers of your app.
 
 ---

@@ -190,17 +190,17 @@ public final class FirebaseRTDBService<T: Codable & Identifiable>: ObservableObj
                     continuation.resume(throwing: error)
                     return
                 }
-
-                guard let value = snapshot?.value else {
-                    continuation.resume(returning: nil) // item not found
+                
+                guard var itemDict = snapshot?.value as? [String: Any] else {
+                    continuation.resume(throwing: RemoteServiceError.noSnapshotValue) // item not found
                     return
                 }
+                
+                // Inject Firebase key
+                itemDict["id"] = id
 
                 do {
-                    var itemDict = value
-                    itemDict["id"] = id  // inject Firebase key into the dictionary
-                    
-                    let data = try JSONSerialization.data(withJSONObject: value)
+                    let data = try JSONSerialization.data(withJSONObject: itemDict)
                     let item = try self.decoder.decode(T.self, from: data)
                     continuation.resume(returning: item)
                 } catch {

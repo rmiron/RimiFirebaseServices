@@ -201,7 +201,17 @@ public final class FirebaseRTDBService<T: Codable & Identifiable>: ObservableObj
     // MARK: - DELETE ALL
     public func deleteAllItems() async throws {
         let ref = try databaseReference()
-        try await ref.removeValue()
+        
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            ref.removeValue { error, _ in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
+        
         items.removeAll()
     }
 }

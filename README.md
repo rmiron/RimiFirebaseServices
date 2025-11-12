@@ -39,3 +39,21 @@ Task {
     try await repository.createItem(SportsCard(id: "123", player: "LeBron James", year: 2003, set: "Topps Chrome"))
     let allCards = try await repository.readAll()
 }
+
+## FirebaseRTDBUserService
+
+`FirebaseRTDBUserService` is a generic service class that bridges your app’s authentication layer (`AppUser`) with your app-specific user representation (`AppUserRepresentable`).  
+
+It provides full CRUD operations on the `AppUserRepresentable` type in Firebase Realtime Database and ensures that each user has a corresponding profile stored in the database.  
+
+### Key Features
+
+- **Generic User Handling**: Works with any type conforming to `AppUserRepresentable`, allowing each app to define its own user model with app-specific fields.  
+- **Automatic User Creation**: Checks if an `AppUserRepresentable` exists for a given `AppUser`. If not, it automatically creates a new instance.  
+- **CRUD Operations**: Supports creating, reading, updating, and deleting users from Firebase Realtime Database.  
+- **Firebase Mapping**: Converts `AppUserRepresentable` instances to a Firebase-compatible dictionary format for storage.  
+
+### Usage
+
+This service is ideal for apps that need to maintain a persistent, app-specific user profile in Firebase RTDB while leveraging Firebase Authentication for identity management.  
+

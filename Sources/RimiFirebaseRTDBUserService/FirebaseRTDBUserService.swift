@@ -76,7 +76,7 @@ public final class FirebaseRTDBUserService<UserType: AppUserRepresentable>: AppU
     }
     
     public func deleteUser(withId id: String) async throws {
-        let profileRef = rootRef.child(id).child(profileNode)
+        let profileRef = rootRef.child(id)
         try await profileRef.removeValue()
     }
     

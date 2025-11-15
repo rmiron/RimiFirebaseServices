@@ -11,12 +11,6 @@ import FirebaseAuth
 import RimiDefinitions
 import Combine
 
-enum RemoteServiceError: Error {
-    case noUser
-    case decodingError
-    case noSnapshotValue
-}
-
 /*
     THIS IS INTENDED TO WORK WITH FIREBASE REALTIME DATABASE
     PURPOSE: This service provides CRUD operations for any object in the Firebase Realtime Database.

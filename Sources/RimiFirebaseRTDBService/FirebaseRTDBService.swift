@@ -27,7 +27,7 @@ import Combine
 
 
 @MainActor
-public final class FirebaseRTDBService<T: Codable & Identifiable>: ObservableObject, RepositoryManaging {
+public final class FirebaseRTDBService<T: Codable & Identifiable & Sendable>: ObservableObject, RepositoryManaging {
 
     @Published public private(set) var items: [T] = []
     @Published public private(set)var isLoading: Bool = false

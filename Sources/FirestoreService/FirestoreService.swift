@@ -43,7 +43,7 @@ public final class FirestoreService<T: Codable & Identifiable>: ObservableObject
         }
     }
     
-    func setUserID(_ userID: String) {
+    public func setUserID(_ userID: String) {
         self.userID = userID
     }
 

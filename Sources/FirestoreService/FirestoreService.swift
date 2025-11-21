@@ -25,22 +25,26 @@ public final class FirestoreService<T: Codable & Identifiable>: ObservableObject
     }
 
     private let db = Firestore.firestore()
-    private let userID: String?
-    
+    private(set) var userID: String
+
     /// Default collection for protocol-conforming CRUD
     private let defaultCollection: String
 
     public init(userID: String? = nil, defaultCollection: String) {
-        self.userID = userID
-        self.defaultCollection = defaultCollection        
+        self.userID = userID ?? ""
+        self.defaultCollection = defaultCollection
     }
     
     private func collectionRef(_ collectionName: String) -> CollectionReference {
-        if let userID = userID {
-            return db.collection("users").document(userID).collection(collectionName)
-        } else {
+        if userID.isEmpty {
             return db.collection(collectionName)
+        } else {
+            return db.collection("users").document(userID).collection(collectionName)
         }
+    }
+    
+    func setUserID(_ userID: String) {
+        self.userID = userID
     }
 
     private func defaultCollectionRef() -> CollectionReference {

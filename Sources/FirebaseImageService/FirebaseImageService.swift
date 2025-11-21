@@ -47,8 +47,8 @@ import RimiDefinitions
 
 public actor FirebaseImageService: ImageFetching {
     
-    static let shared = FirebaseImageService(diskCache: ImageDiskCaching())
-    static let memoryOnly = FirebaseImageService(diskCache: nil)
+    public static let shared = FirebaseImageService(diskCache: DefaultImageDiskCache())
+    public static let memoryOnly = FirebaseImageService(diskCache: nil)
     
     private init(diskCache: ImageDiskCaching?) {
         self.diskCache = diskCache
@@ -61,7 +61,7 @@ public actor FirebaseImageService: ImageFetching {
     /// Upload an image to Firebase Storage at a specific path.
     /// Optionally overwrites existing data at that path.
     /// let path = "users/\(userID)/profile.png"
-    func uploadImage(_ image: UIImage, to path: String) async throws -> URL {
+    public func uploadImage(_ image: UIImage, to path: String) async throws -> URL {
         guard let data = image.pngData() else {
             throw NSError(domain: "FirebaseImageService", code: -1,
                           userInfo: [NSLocalizedDescriptionKey: "Failed to convert UIImage to PNG"])
@@ -81,7 +81,7 @@ public actor FirebaseImageService: ImageFetching {
         return url
     }
 
-    func fetchImage(path: String) async throws -> UIImage {
+    public func fetchImage(path: String) async throws -> UIImage {
         // If its in memory return it
         if let cached = memoryCache.object(forKey: path as NSString) {
             return cached
@@ -122,16 +122,16 @@ public actor FirebaseImageService: ImageFetching {
     /// Replace an existing image at the given path with a new UIImage.
     /// Uploads to Firebase Storage, clears caches, and fetches the updated image.
     func replaceImage(at path: String, with newImage: UIImage) async throws -> UIImage {
-        try await uploadImage(newImage, to: path)
+        let _ = try await uploadImage(newImage, to: path)
         return try await fetchImage(path: path)
     }
 
-    func cancelFetch(for path: String) async {
+    public func cancelFetch(for path: String) async {
         ongoingTasks[path]?.cancel()
         ongoingTasks[path] = nil
     }
     
-    func cancelAll() async {
+    public func cancelAll() async {
         for (_, task) in ongoingTasks {
             task.cancel()
         }

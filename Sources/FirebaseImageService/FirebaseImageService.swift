@@ -10,6 +10,7 @@ import UIKit
 import RimiDefinitions
 
 /*
+    Actors enforce data isolation
     actor for service ensures no race conditions.
  
     Why FirebaseImageService Should Be a Singleton
@@ -45,6 +46,15 @@ import RimiDefinitions
     Singleton solves this cleanly.
  */
 
+/*
+    Inside an actor (FirebaseImageService):
+        - diskCache is a property of the actor (self.diskCache).
+        - Swift’s actor model treats all properties as actor-isolated.
+        - Accessing self.diskCache from an async call can “escape” the actor,
+            hence Swift warns of a potential data race.
+    Even if the cache is now thread-safe, the compiler is being conservative.
+ */
+
 public actor FirebaseImageService: ImageFetching {
     
     public static let shared = FirebaseImageService(diskCache: DefaultImageDiskCache())
@@ -54,7 +64,8 @@ public actor FirebaseImageService: ImageFetching {
         self.diskCache = diskCache
     }
 
-    private var ongoingTasks: [String: Task<UIImage, Error>] = [:]
+    private var ongoingUploadTasks: [String: Task<URL, Error>] = [:]
+    private var ongoingFetchTasks: [String: Task<UIImage, Error>] = [:]
     private let memoryCache = NSCache<NSString, UIImage>()
     private let diskCache: ImageDiskCaching?
     
@@ -62,23 +73,31 @@ public actor FirebaseImageService: ImageFetching {
     /// Optionally overwrites existing data at that path.
     /// let path = "users/\(userID)/profile.png"
     public func uploadImage(_ image: UIImage, to path: String) async throws -> URL {
-        guard let data = image.pngData() else {
-            throw NSError(domain: "FirebaseImageService", code: -1,
-                          userInfo: [NSLocalizedDescriptionKey: "Failed to convert UIImage to PNG"])
+        if let task = ongoingUploadTasks[path] {
+            return try await task.value
         }
         
-        let ref = Storage.storage().reference(withPath: path)
-        let _ = try await ref.putDataAsync(data, metadata: nil)
-        let url = try await ref.downloadURL()
-        print("Image is available at: \(url.absoluteString)")
+        let task = Task<URL, Error> {
+            guard let data = image.pngData() else {
+                throw NSError(domain: "FirebaseImageService", code: -1,
+                              userInfo: [NSLocalizedDescriptionKey: "Failed to convert UIImage to PNG"])
+            }
+            
+            let ref = Storage.storage().reference(withPath: path)
+            let _ = try await ref.putDataAsync(data, metadata: nil)
+            let url = try await ref.downloadURL()
+            
+            // Optional: clear cache so next fetch returns fresh image
+            memoryCache.removeObject(forKey: path as NSString)
+            await diskCache?.remove(key: path)
+            
+            return url
+        }
         
-        // Optional: clear cache so next fetch returns fresh image
-        memoryCache.removeObject(forKey: path as NSString)
-        await diskCache?.remove(key: path)
-        ongoingTasks[path]?.cancel()
-        ongoingTasks[path] = nil
-        
-        return url
+        ongoingUploadTasks[path]?.cancel()
+        let result = try await task.value
+        ongoingUploadTasks[path] = nil
+        return result
     }
 
     public func fetchImage(path: String) async throws -> UIImage {
@@ -94,13 +113,13 @@ public actor FirebaseImageService: ImageFetching {
         }
         
         // Is there a task fetching it? Continue it
-        if let task = ongoingTasks[path] {
+        if let task = ongoingFetchTasks[path] {
             return try await task.value
         }
         
         // If we reach this point then get it from Firebase
         let task = Task { () throws -> UIImage in
-            defer { ongoingTasks[path] = nil }
+            defer { ongoingFetchTasks[path] = nil }
             
             let ref = Storage.storage().reference(withPath: path)
             let data = try await ref.data(maxSize: 8 * 1024 * 1024)
@@ -115,7 +134,7 @@ public actor FirebaseImageService: ImageFetching {
             return uiImage
         }
         
-        ongoingTasks[path] = task
+        ongoingFetchTasks[path] = task
         return try await task.value
     }
     
@@ -125,20 +144,32 @@ public actor FirebaseImageService: ImageFetching {
         let _ = try await uploadImage(newImage, to: path)
         return try await fetchImage(path: path)
     }
+    
+    public func cancelUpload(for path: String) async {
+        ongoingUploadTasks[path]?.cancel()
+        ongoingUploadTasks[path] = nil
+    }
+
+    public func cancelAllUploads() async {
+        for (_, task) in ongoingUploadTasks {
+            task.cancel()
+        }
+        ongoingUploadTasks.removeAll()
+    }
 
     public func cancelFetch(for path: String) async {
-        ongoingTasks[path]?.cancel()
-        ongoingTasks[path] = nil
+        ongoingFetchTasks[path]?.cancel()
+        ongoingFetchTasks[path] = nil
     }
     
     public func cancelAll() async {
-        for (_, task) in ongoingTasks {
+        for (_, task) in ongoingFetchTasks {
             task.cancel()
         }
-        ongoingTasks.removeAll()
+        ongoingFetchTasks.removeAll()
     }
     
     private func removeTask(for path: String) async {
-        ongoingTasks[path] = nil
+        ongoingFetchTasks[path] = nil
     }
 }

@@ -29,7 +29,7 @@ public final class FirestoreUserService<UserType: AppUserRepresentable>: AppUser
         }
         
         // Create new user
-        var newUser = User.make(from: appUser)
+        let newUser = User.make(from: appUser)
         try docRef.setData(from: newUser)
         return (newUser, true)
     }

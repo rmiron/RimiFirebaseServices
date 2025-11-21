@@ -172,6 +172,7 @@ public final class FirebaseRTDBService<T: Codable & Identifiable & Sendable>: Ob
                     }
                 }
 
+                // Items should not be held by this service
                 self.items = fetchedItems
                 continuation.resume(returning: ())
             }

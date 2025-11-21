@@ -67,11 +67,15 @@ public final class FirebaseRTDBService<T: Codable & Identifiable & Sendable>: Ob
     // MARK: - CREATE
     public func createItem(_ item: T) async throws {
         let ref = try databaseReference()
+        
+        // Use the item's ID instead of auto-id. id should be the same as the item.uuid 
+        let itemRef = ref.child(item.id as! String)
+        
         let data = try encoder.encode(item)
         let json = try JSONSerialization.jsonObject(with: data)
+        
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            let childRef = ref.childByAutoId()
-            childRef.setValue(json) { error, _ in
+            itemRef.setValue(json) { error, _ in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else {

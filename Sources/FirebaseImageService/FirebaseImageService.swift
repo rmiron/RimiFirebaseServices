@@ -7,6 +7,7 @@
 
 import FirebaseStorage
 import UIKit
+import RimiDefinitions
 
 /*
     actor for service ensures no race conditions.

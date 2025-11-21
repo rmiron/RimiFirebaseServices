@@ -1,5 +1,5 @@
 {
-  "originHash" : "bc4a19b51edf6095224108df31e6ea14724ab76d68a2c0f5182d1c89b4995ec0",
+  "originHash" : "f3d6bb0e0e54bed026286ce6db26e11038e6ae3c57d117c1bda446e619d8efb7",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -124,7 +124,7 @@
       "location" : "https://github.com/rmiron/RimiDefinitions.git",
       "state" : {
         "branch" : "main",
-        "revision" : "9e9bae86517bf6a3edfef4778b6c79b3bbf77c25"
+        "revision" : "c9da39973dd96d6c85062358a7fe6e9f4dd65d5c"
       }
     },
     {

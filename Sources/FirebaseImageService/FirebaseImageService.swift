@@ -47,7 +47,7 @@ import RimiDefinitions
 
 public actor FirebaseImageService: ImageFetching {
     
-    static let shared = FirebaseImageService(diskCache: DefaultImageDiskCache())
+    static let shared = FirebaseImageService(diskCache: ImageDiskCaching())
     static let memoryOnly = FirebaseImageService(diskCache: nil)
     
     private init(diskCache: ImageDiskCaching?) {

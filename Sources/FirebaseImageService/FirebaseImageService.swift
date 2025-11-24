@@ -72,19 +72,14 @@ public actor FirebaseImageService: ImageFetching {
     /// Upload an image to Firebase Storage at a specific path.
     /// Optionally overwrites existing data at that path.
     /// let path = "users/\(userID)/profile.png"
-    public func uploadImage(_ image: UIImage, to path: String) async throws -> URL {
+    public func uploadImageData(_ imageData: Data, to path: String) async throws -> URL {
         if let task = ongoingUploadTasks[path] {
             return try await task.value
         }
         
         let task = Task<URL, Error> {
-            guard let data = image.pngData() else {
-                throw NSError(domain: "FirebaseImageService", code: -1,
-                              userInfo: [NSLocalizedDescriptionKey: "Failed to convert UIImage to PNG"])
-            }
-            
             let ref = Storage.storage().reference(withPath: path)
-            let _ = try await ref.putDataAsync(data, metadata: nil)
+            let _ = try await ref.putDataAsync(imageData, metadata: nil)
             let url = try await ref.downloadURL()
             
             // Optional: clear cache so next fetch returns fresh image
@@ -122,7 +117,7 @@ public actor FirebaseImageService: ImageFetching {
             defer { ongoingFetchTasks[path] = nil }
             
             let ref = Storage.storage().reference(withPath: path)
-            let data = try await ref.data(maxSize: 8 * 1024 * 1024)
+            let data = try await ref.data(maxSize: 10 * 1024 * 1024) // limit to 10MB
             
             guard let uiImage = UIImage(data: data) else {
                 throw NSError(domain: "FirebaseImageService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid image data"])
@@ -140,8 +135,8 @@ public actor FirebaseImageService: ImageFetching {
     
     /// Replace an existing image at the given path with a new UIImage.
     /// Uploads to Firebase Storage, clears caches, and fetches the updated image.
-    func replaceImage(at path: String, with newImage: UIImage) async throws -> UIImage {
-        let _ = try await uploadImage(newImage, to: path)
+    func replaceImage(at path: String, with newImageData: Data) async throws -> UIImage {
+        let _ = try await uploadImageData(newImageData, to: path)
         return try await fetchImage(path: path)
     }
     

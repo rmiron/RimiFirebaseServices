@@ -135,7 +135,7 @@ public actor FirebaseImageService: ImageFetching {
     
     /// Replace an existing image at the given path with a new UIImage.
     /// Uploads to Firebase Storage, clears caches, and fetches the updated image.
-    func replaceImage(at path: String, with newImageData: Data) async throws -> UIImage {
+    public func replaceImage(at path: String, with newImageData: Data) async throws -> UIImage {
         let _ = try await uploadImageData(newImageData, to: path)
         return try await fetchImage(path: path)
     }

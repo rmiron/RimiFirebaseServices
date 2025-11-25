@@ -86,7 +86,7 @@ public final class FirestoreService<T: Codable & Identifiable>: RemoteDataManagi
         inCollection collectionName: String? = nil
     ) async throws -> [T] {
         var query: Query = (collectionName != nil ? collectionRef(collectionName!) : defaultCollectionRef())
-                    .limit(to: limit)
+                    .limit(to: Int(limit))
         if let lastKey = lastKey, !lastKey.isEmpty {
             let lastDoc = try await (collectionName != nil ? collectionRef(collectionName!) : defaultCollectionRef())
                 .document(lastKey)

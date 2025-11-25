@@ -82,12 +82,15 @@ public final class FirestoreService<T: Codable & Identifiable>: RemoteDataManagi
     // MARK: - Pagination using a key (document ID)
     public func readItems(
         startingAfter lastKey: String? = nil,
-        limit: UInt = 50
+        limit: UInt = 50,
+        inCollection collectionName: String? = nil
     ) async throws -> [T] {
-        var query: Query = defaultCollectionRef().limit(to: Int(limit))
-        
+        var query: Query = (collectionName != nil ? collectionRef(collectionName!) : defaultCollectionRef())
+                    .limit(to: limit)
         if let lastKey = lastKey, !lastKey.isEmpty {
-            let lastDoc = try await defaultCollectionRef().document(lastKey).getDocument()
+            let lastDoc = try await (collectionName != nil ? collectionRef(collectionName!) : defaultCollectionRef())
+                .document(lastKey)
+                .getDocument()
             if lastDoc.exists {
                 query = query.start(afterDocument: lastDoc)
             }

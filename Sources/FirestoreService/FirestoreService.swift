@@ -17,7 +17,7 @@ import RimiDefinitions
     let adminService = FirestoreService(userID: "admin", defaultCollection: "logs")
  */
 
-public final class FirestoreService<T: Codable & Identifiable>: RepositoryManaging {
+public final class FirestoreService<T: Codable & Identifiable>: RemoteDataManaging {
     private let db = Firestore.firestore()
     private(set) var userID: String
     private let defaultCollection: String

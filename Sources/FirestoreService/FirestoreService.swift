@@ -52,9 +52,9 @@ public final class FirestoreService<T: Codable & Identifiable>: RemoteDataManagi
         try ref.setData(from: item)
     }
 
-    public func readItem(by id: T.ID, inCollection collectionName: String? = nil) async throws -> T? {
+    public func readItem(by id: String, inCollection collectionName: String? = nil) async throws -> T? {
         let doc = try await (collectionName != nil ? collectionRef(collectionName!) : defaultCollectionRef())
-            .document(id as! String)
+            .document(id)
             .getDocument()
         return try doc.data(as: T.self)
     }

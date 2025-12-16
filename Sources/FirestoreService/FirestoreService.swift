@@ -55,6 +55,7 @@ public final class FirestoreService<T: Codable & Identifiable>: RemoteDataManagi
     public func createItem(_ item: T, withID id: String, inCollection collectionName: String? = nil) async throws {
         let ref = (collectionName != nil ? collectionRef(collectionName!) : defaultCollectionRef())
             .document(id)
+    
         try ref.setData(from: item)
     }
 

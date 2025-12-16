@@ -44,6 +44,10 @@ public final actor MockRemoteDataManager<T: Codable & Identifiable & Equatable &
         deletedItems
     }
     
+    public func setErrorToThrow(_ error: Error) {
+        self.errorToThrow = error
+    }
+    
     public func setItems(_ items: [T]) {
         storage.removeAll()
         for item in items {

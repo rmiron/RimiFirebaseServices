@@ -21,6 +21,8 @@ public final actor MockRemoteDataManager<T: Codable & Identifiable & Equatable &
     private(set) var createdItems: [T] = []
     private(set) var updatedItems: [T] = []
     private(set) var deletedItems: [T] = []
+    
+    var readItemsCalls: [(lastKey: String?, limit: UInt)] = []
 
     // MARK: - Errors
     var errorToThrow: Error?
@@ -53,6 +55,8 @@ public final actor MockRemoteDataManager<T: Codable & Identifiable & Equatable &
         inCollection collectionName: String?
     ) async throws -> [T] {
         try maybeThrow()
+
+        readItemsCalls.append((lastKey, limit))
 
         let sortedKeys = storage.keys.sorted()
         let startIndex = lastKey.flatMap { sortedKeys.firstIndex(of: $0).map { $0 + 1 } } ?? 0

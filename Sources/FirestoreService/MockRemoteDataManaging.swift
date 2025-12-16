@@ -12,7 +12,7 @@ public struct TestItem: Identifiable, Codable, Equatable & Sendable {
     var value: String
 }
 
-public final actor MockRemoteDataManager<T: Codable & Identifiable & Equatable & Sendable>: RemoteDataManaging {
+public final actor MockRemoteDataManager<T: Codable & Identifiable & Equatable & Sendable>: RemoteDataManaging where T.ID == String {
 
     // MARK: - Storage
     private var storage: [String: T] = [:]
@@ -31,6 +31,7 @@ public final actor MockRemoteDataManager<T: Codable & Identifiable & Equatable &
         
     }
     
+    // MARK: - Testing Helpers
     public func getCreatemItems() -> [T] {
         createdItems
     }
@@ -42,11 +43,18 @@ public final actor MockRemoteDataManager<T: Codable & Identifiable & Equatable &
     public func getDeletedItems() -> [T] {
         deletedItems
     }
+    
+    public func setItems(_ items: [T]) {
+        storage.removeAll()
+        for item in items {
+            storage[item.id] = item
+        }
+    }
 
     // MARK: - CRUD
     public func createItem(_ item: T, inCollection collectionName: String?) async throws {
         try maybeThrow()
-        storage[item.id as! String] = item
+        storage[item.id] = item
         createdItems.append(item)
     }
 
@@ -81,13 +89,13 @@ public final actor MockRemoteDataManager<T: Codable & Identifiable & Equatable &
 
     public func updateItem(_ item: T, inCollection collectionName: String?) async throws {
         try maybeThrow()
-        storage[item.id as! String] = item
+        storage[item.id] = item
         updatedItems.append(item)
     }
 
     public func deleteItem(_ item: T, inCollection collectionName: String?) async throws {
         try maybeThrow()
-        storage[item.id as! String] = nil
+        storage[item.id] = nil
         deletedItems.append(item)
     }
 

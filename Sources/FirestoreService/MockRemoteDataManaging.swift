@@ -7,12 +7,12 @@
 
 import RimiDefinitions
 
-struct TestItem: Identifiable, Codable, Equatable & Sendable {
-    let id: String
+public struct TestItem: Identifiable, Codable, Equatable & Sendable {
+    public let id: String
     var value: String
 }
 
-final actor MockRemoteDataManager<T: Codable & Identifiable & Equatable & Sendable>: RemoteDataManaging {
+public final actor MockRemoteDataManager<T: Codable & Identifiable & Equatable & Sendable>: RemoteDataManaging {
 
     // MARK: - Storage
     private var storage: [String: T] = [:]
@@ -27,24 +27,24 @@ final actor MockRemoteDataManager<T: Codable & Identifiable & Equatable & Sendab
 
     // MARK: - CRUD
 
-    func createItem(_ item: T, inCollection collectionName: String?) async throws {
+    public func createItem(_ item: T, inCollection collectionName: String?) async throws {
         try maybeThrow()
         storage[item.id as! String] = item
         createdItems.append(item)
     }
 
-    func createItem(_ item: T, withID id: String, inCollection collectionName: String?) async throws {
+    public func createItem(_ item: T, withID id: String, inCollection collectionName: String?) async throws {
         try maybeThrow()
         storage[id] = item
         createdItems.append(item)
     }
 
-    func readItem(by id: String, inCollection collectionName: String?) async throws -> T? {
+    public func readItem(by id: String, inCollection collectionName: String?) async throws -> T? {
         try maybeThrow()
         return storage[id]
     }
 
-    func readItems(
+    public func readItems(
         startingAfter lastKey: String?,
         limit: UInt,
         inCollection collectionName: String?
@@ -60,19 +60,19 @@ final actor MockRemoteDataManager<T: Codable & Identifiable & Equatable & Sendab
             .compactMap { storage[$0] }
     }
 
-    func updateItem(_ item: T, inCollection collectionName: String?) async throws {
+    public func updateItem(_ item: T, inCollection collectionName: String?) async throws {
         try maybeThrow()
         storage[item.id as! String] = item
         updatedItems.append(item)
     }
 
-    func deleteItem(_ item: T, inCollection collectionName: String?) async throws {
+    public func deleteItem(_ item: T, inCollection collectionName: String?) async throws {
         try maybeThrow()
         storage[item.id as! String] = nil
         deletedItems.append(item)
     }
 
-    func deleteAllItems(inCollection collectionName: String?) async throws {
+    public func deleteAllItems(inCollection collectionName: String?) async throws {
         try maybeThrow()
         storage.removeAll()
     }

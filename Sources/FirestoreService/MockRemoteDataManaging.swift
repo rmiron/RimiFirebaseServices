@@ -24,9 +24,12 @@ public final actor MockRemoteDataManager<T: Codable & Identifiable & Equatable &
 
     // MARK: - Errors
     var errorToThrow: Error?
+    
+    public init() {
+        
+    }
 
     // MARK: - CRUD
-
     public func createItem(_ item: T, inCollection collectionName: String?) async throws {
         try maybeThrow()
         storage[item.id as! String] = item

@@ -22,7 +22,7 @@ public final actor MockRemoteDataManager<T: Codable & Identifiable & Equatable &
     private(set) var updatedItems: [T] = []
     private(set) var deletedItems: [T] = []
     
-    var readItemsCalls: [(lastKey: String?, limit: UInt)] = []
+    public var readItemsCalls: [(lastKey: String?, limit: UInt)] = []
 
     // MARK: - Errors
     var errorToThrow: Error?

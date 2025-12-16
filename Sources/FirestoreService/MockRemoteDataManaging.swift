@@ -30,6 +30,18 @@ public final actor MockRemoteDataManager<T: Codable & Identifiable & Equatable &
     public init() {
         
     }
+    
+    public func getCreatemItems() -> [T] {
+        createdItems
+    }
+    
+    public func getUpdatedItems() -> [T] {
+        updatedItems
+    }
+    
+    public func getDeletedItems() -> [T] {
+        deletedItems
+    }
 
     // MARK: - CRUD
     public func createItem(_ item: T, inCollection collectionName: String?) async throws {
